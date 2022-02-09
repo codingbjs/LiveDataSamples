@@ -1,5 +1,6 @@
 package com.codingbjs.livedatasamples;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -11,8 +12,9 @@ import java.util.List;
 @Dao
 public interface TodoDao {
 
+    // List<T> 를 LiveData 로 리턴
     @Query("SELECT * FROM Todo")
-    List<Todo> getAll();
+    LiveData<List<Todo>> getAll();
 
     @Insert
     void insert(Todo todo);
