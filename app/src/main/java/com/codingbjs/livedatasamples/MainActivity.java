@@ -10,6 +10,8 @@ import android.view.View;
 import com.codingbjs.livedatasamples.databinding.ActivityMainBinding;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,15 +19,17 @@ public class MainActivity extends AppCompatActivity {
 
     AppDatabase db;
 
+    ExecutorService executorService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
 
-        db = Room.databaseBuilder(this, AppDatabase.class, "todo_db")
-                .allowMainThreadQueries()
-                .build();
+        executorService = Executors.newFixedThreadPool(4);
+
+        db = Room.databaseBuilder(this, AppDatabase.class, "todo_db").build();
 
         // todoDao().getAll()로 리턴 되는  LiveData 를  observe 로 갱신 체크
         db.todoDao().getAll().observe(this, new Observer<List<Todo>>() {
@@ -39,7 +43,12 @@ public class MainActivity extends AppCompatActivity {
         mainBinding.addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.todoDao().insert(new Todo(mainBinding.todoEditText.getText().toString()));
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        db.todoDao().insert(new Todo(mainBinding.todoEditText.getText().toString()));
+                    }
+                });
             }
         });
 
